@@ -9,17 +9,23 @@ import azure.functions as func
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
+from shared import csl_meta
+
 connection_string = os.environ['CONNECTION_STRING']
 csl_container = os.environ['CSL_CONTAINER']
 csl_static_container = os.environ['CSL_STATIC_CONTAINER']
-dpl_meta_url = os.environ['DPL_META_URL']
-dtc_meta_url = os.environ['DTC_META_URL']
-el_meta_url = os.environ['EL_META_URL']
-isn_meta_url = os.environ['ISN_META_URL']
-meu_meta_url = os.environ['MEU_META_URL']
-sdn_meta_url = os.environ['SDN_META_URL']
-treasury_meta_url = os.environ['TREASURY_META_URL']
-uvl_meta_url = os.environ['UVL_META_URL']
+cap_meta_url = csl_meta.get_meta_url('cap')
+cmic_meta_url = csl_meta.get_meta_url('cmic')
+dpl_meta_url = csl_meta.get_meta_url('dpl')
+dtc_meta_url = csl_meta.get_meta_url('dtc')
+el_meta_url = csl_meta.get_meta_url('el')
+fse_meta_url = csl_meta.get_meta_url('fse')
+isn_meta_url = csl_meta.get_meta_url('isn')
+mbs_meta_url = csl_meta.get_meta_url('mbs')
+meu_meta_url = csl_meta.get_meta_url('meu')
+sdn_meta_url = csl_meta.get_meta_url('sdn')
+ssi_meta_url = csl_meta.get_meta_url('ssi')
+uvl_meta_url = csl_meta.get_meta_url('uvl')
 
 json_out = 'consolidated.json'
 data_file_list = [
@@ -55,12 +61,16 @@ def main(mytimer: func.TimerRequest) -> None:
     dtc_date = datetime.datetime.strptime(dtc_res, '%m.%d.%y')
     dtc_updated = dtc_date.strftime('%Y-%m-%dT%H:%M:%S+00:00')
 
+    cap_updated = get_date(cap_meta_url)
+    cmic_updated = get_date(cmic_meta_url)
     dpl_updated = get_date(dpl_meta_url)
     el_updated = get_date(el_meta_url)
+    fse_updated = get_date(fse_meta_url)
     isn_updated = get_date(isn_meta_url)
+    mbs_updated = get_date(mbs_meta_url)
     meu_updated = get_date(meu_meta_url)
     sdn_updated = get_date(sdn_meta_url)
-    treasury_updated = get_date(treasury_meta_url)
+    ssi_updated = get_date(ssi_meta_url)
     uvl_updated = get_date(uvl_meta_url)
 
     doc_dict = {
@@ -69,13 +79,13 @@ def main(mytimer: func.TimerRequest) -> None:
         "sources_used": [
             {
                 "last_imported": utc_timestamp,
-                "source_last_updated": treasury_updated,
+                "source_last_updated": cap_updated,
                 "source": "Capta List (CAP) - Treasury Department",
                 "import_rate": "Hourly"
             },
             {
                 "last_imported": utc_timestamp,
-                "source_last_updated": treasury_updated,
+                "source_last_updated": cmic_updated,
                 "source": "Non-SDN Chinese Military-Industrial Complex Companies List (CMIC) - Treasury Department",
                 "import_rate": "Hourly"
             },
@@ -99,7 +109,7 @@ def main(mytimer: func.TimerRequest) -> None:
             },
             {
                 "last_imported": utc_timestamp,
-                "source_last_updated": treasury_updated,
+                "source_last_updated": fse_updated,
                 "source": "Foreign Sanctions Evaders (FSE) - Treasury Department",
                 "import_rate": "Hourly"
             },
@@ -111,7 +121,7 @@ def main(mytimer: func.TimerRequest) -> None:
             },
             {
                 "last_imported": utc_timestamp,
-                "source_last_updated": treasury_updated,
+                "source_last_updated": mbs_updated,
                 "source": "Non-SDN Menu-Based Sanctions List (NS-MBS List) - Treasury Department",
                 "import_rate": "Hourly"
             },
@@ -129,7 +139,7 @@ def main(mytimer: func.TimerRequest) -> None:
             },
             {
                 "last_imported": utc_timestamp,
-                "source_last_updated": treasury_updated,
+                "source_last_updated": ssi_updated,
                 "source": "Sectoral Sanctions Identifications List (SSI) - Treasury Department",
                 "import_rate": "Hourly"
             },

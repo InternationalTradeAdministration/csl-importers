@@ -9,11 +9,10 @@ import urllib.request
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import country_code, output
+from shared import country_code, csl_meta, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-uvl_meta_url = os.environ['UVL_META_URL']
 source_abbr = 'uvl'
 
 
@@ -25,7 +24,7 @@ def main():
     expected_headers = frozenset({'COUNTRY', 'NAME', 'ADDRESS'})
 
     logging.info('Checking last updated')
-    last_modified = urllib.request.urlopen(uvl_meta_url).read().decode('utf-8').strip()
+    last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
     response = urllib.request.urlopen(url)
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:

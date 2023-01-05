@@ -8,12 +8,11 @@ import urllib.request
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import citizenship, convert_date, \
+from shared import csl_meta, citizenship, convert_date, \
     name_extractor, nested_fields, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-treasury_meta_url = os.environ['TREASURY_META_URL']
 ns = {'xmlns': 'http://tempuri.org/sdnList.xsd'}
 
 source_abbr = 'cmic'
@@ -39,7 +38,8 @@ null_fields = [
 
 def main():
     logging.info('Checking last updated')
-    last_modified = urllib.request.urlopen(treasury_meta_url).read().decode('utf-8').strip()
+    last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
+
     response = urllib.request.urlopen(source_list_url)
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:
@@ -127,6 +127,6 @@ def main():
     json_output.close()
     logging.info('Write last modified file')
     content_setting = ContentSettings(content_type='text/plain')
-    blob_client = blob_service_client.get_blob_client(container=csl_container, blob=f"treasury_meta.txt")
+    blob_client = blob_service_client.get_blob_client(container=csl_container, blob=f"{source_abbr}_meta.txt")
     blob_client.upload_blob(latest_modified, overwrite=True, content_settings=content_setting)
     json_output.close()

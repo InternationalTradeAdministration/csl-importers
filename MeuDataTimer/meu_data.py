@@ -8,11 +8,10 @@ import urllib.request
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
-from shared import convert_date, output
+from shared import convert_date, csl_meta, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-meu_meta_url = os.environ['MEU_META_URL']
 source_abbr = 'meu'
 
 
@@ -34,7 +33,7 @@ def main():
     })
 
     logging.info('Checking last updated')
-    last_modified = urllib.request.urlopen(meu_meta_url).read().decode('utf-8').strip()
+    last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
     response = urllib.request.urlopen(url)
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:

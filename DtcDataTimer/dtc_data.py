@@ -9,11 +9,10 @@ import urllib.request
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
-from shared import output
+from shared import csl_meta, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-dtc_meta_url = os.environ["DTC_META_URL"]
 source_abbr = 'dtc'
 
 
@@ -33,7 +32,7 @@ def main():
     })
 
     logging.info('Checking last updated')
-    last_modified = urllib.request.urlopen(dtc_meta_url).read().decode('utf-8-sig').strip()
+    last_modified = csl_meta.get_meta_url_last_modified(source_abbr, 'utf-8-sig')
     stat_response = urllib.request.urlopen(stat_debarred_url)
     filename_meta_date = stat_response.info()['Content-Disposition']
     latest_modified = ''.join(re.findall('_(.*).csv"', filename_meta_date))

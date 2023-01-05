@@ -8,11 +8,10 @@ import urllib.request
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import citizenship, name_extractor, nested_fields, output
+from shared import citizenship, csl_meta, name_extractor, nested_fields, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-sdn_meta_url = os.environ['SDN_META_URL']
 ns = {'xmlns': 'http://tempuri.org/sdnList.xsd'}
 
 source_abbr = 'sdn'
@@ -36,7 +35,7 @@ null_fields = [
 
 def main():
     logging.info('Checking last updated')
-    last_modified = urllib.request.urlopen(sdn_meta_url).read().decode('utf-8').strip()
+    last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
     url = 'https://www.treasury.gov/ofac/downloads/sdn.xml'
     response = urllib.request.urlopen(url)
     latest_modified = response.info()['Last-Modified']
