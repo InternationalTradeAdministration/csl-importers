@@ -23,6 +23,7 @@ fse_meta_url = csl_meta.get_meta_url('fse')
 isn_meta_url = csl_meta.get_meta_url('isn')
 mbs_meta_url = csl_meta.get_meta_url('mbs')
 meu_meta_url = csl_meta.get_meta_url('meu')
+plc_meta_url = csl_meta.get_meta_url('plc')
 sdn_meta_url = csl_meta.get_meta_url('sdn')
 ssi_meta_url = csl_meta.get_meta_url('ssi')
 uvl_meta_url = csl_meta.get_meta_url('uvl')
@@ -32,6 +33,7 @@ data_file_list = [
     'cmic.json', 'cap.json', 'dpl.json',
     'dtc.json', 'el.json', 'fse.json',
     'isn.json', 'mbs.json', 'meu.json',
+    'plc.json',
     'sdn.json', 'ssi.json', 'uvl.json'
 ]
 
@@ -69,6 +71,7 @@ def main(mytimer: func.TimerRequest) -> None:
     isn_updated = get_date(isn_meta_url)
     mbs_updated = get_date(mbs_meta_url)
     meu_updated = get_date(meu_meta_url)
+    plc_updated = get_date(plc_meta_url)
     sdn_updated = get_date(sdn_meta_url)
     ssi_updated = get_date(ssi_meta_url)
     uvl_updated = get_date(uvl_meta_url)
@@ -129,6 +132,12 @@ def main(mytimer: func.TimerRequest) -> None:
                 "last_imported": utc_timestamp,
                 "source_last_updated": meu_updated,
                 "source": "Military End User (MEU) List - Bureau of Industry and Security",
+                "import_rate": "Hourly"
+            },
+            {
+                "last_imported": utc_timestamp,
+                "source_last_updated": plc_updated,
+                "source": "Palestinian Legislative Council List (PLC) - Treasury Department",
                 "import_rate": "Hourly"
             },
             {
