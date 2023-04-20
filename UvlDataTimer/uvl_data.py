@@ -36,7 +36,7 @@ def main():
     csvfile = csv.DictReader(lines)
     source_csv_fields = csvfile.fieldnames
     logging.info('Checking header')
-    if not set(source_csv_fields) == (expected_headers):
+    if not expected_headers.issubset(set(source_csv_fields)):
         raise ValueError("Actual headers differ from expected headers")
 
     logging.info('Processing data')
