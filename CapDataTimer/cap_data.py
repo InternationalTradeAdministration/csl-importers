@@ -2,14 +2,14 @@ import csv
 import json
 import logging
 import os
-import xml.etree.ElementTree as ET
 import urllib.request
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import csl_meta, citizenship, convert_date, \
-    name_extractor, nested_fields, output
+from shared import csl_meta, nested_fields, output
+
+from sanctions_list_parser import SanctionsListParser
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
@@ -17,7 +17,7 @@ ns = {'xmlns': 'http://tempuri.org/sdnList.xsd'}
 
 source_abbr = 'cap'
 source_name = 'Capta List (CAP) - Treasury Department'
-source_list_url = 'https://www.treasury.gov/ofac/downloads/consolidated/consolidated.xml'
+source_list_url = 'https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml'
 source_information_url = 'https://home.treasury.gov/policy-issues/financial-sanctions/consolidated-sanctions-list-non-sdn-lists/list-of-foreign-financial-institutions-subject-to-correspondent-account-or-payable-through-account-sanctions-capta-list'
 
 address_path = 'xmlns:addressList/xmlns:address'
@@ -47,8 +47,11 @@ def main():
         return 0
 
     logging.info('Requesting data file')
-    tree = ET.parse(response)
-    root = tree.getroot()
+
+    sanction_list_parser = SanctionsListParser(response)
+    capta_list = sanction_list_parser.get_sanctions_list_by_name('capta')
+    logging.info(f'capta_list {capta_list}')
+    sanctions_entries = sanction_list_parser.get_sanctions_entries_by_list_id(capta_list['id'])
 
     logging.info('Processing data')
     csv_output = StringIO()
@@ -59,56 +62,31 @@ def main():
     csv_writer.writeheader()
     tsv_writer.writeheader()
     doc_list = []
-    for entry in root.findall('xmlns:sdnEntry', ns):
-        doc = {}
-        programs = entry.find('xmlns:programList', ns)
-        programs = [p.text for p in programs]
-        if '561-Related' in programs or 'RUSSIA-EO14024' in programs:
-            ids = entry.findall(id_path, ns)
-            doc['ids'] = nested_fields.get_ids(ids)
-            if 'RUSSIA-EO14024' in programs:
-                vals = [val for d in doc['ids'] for val in d.values() if val]
-                if 'Effective Date (EO 14024 Directive 2):' not in vals:
-                    continue
 
-            doc['entity_number'] = entry.find('xmlns:uid', ns).text.strip()
-            doc['id'] = entry.find('xmlns:uid', ns).text.strip()
-            doc['name'] = name_extractor.get_name(entry)
-            doc['programs'] = programs
-            remarks = entry.find('xmlns:remarks', ns)
-            doc['remarks'] = remarks.text if remarks is not None else None
-            doc['source'] = source_name
-            doc['source_information_url'] = source_information_url
-            doc['source_list_url'] = source_list_url
-            doc['type'] = entry.find('xmlns:sdnType', ns).text.strip()
+    for sanctions_entry in sanctions_entries:
+        sanctions_entry['id'] = f'{sanctions_entry["id"]}'
+        sanctions_entry['entity_number'] = sanctions_entry['id']
+        sanctions_entry['source'] = source_name
+        sanctions_entry['source_information_url'] = source_information_url
+        sanctions_entry['source_list_url'] = source_list_url
 
-            addresses = entry.findall(address_path, ns)
-            doc['addresses'] = nested_fields.get_multiline_addresses(addresses)
-            alt_names = entry.findall(alt_names_path, ns)
-            doc['alt_names'] = name_extractor.get_alt_names(alt_names)
-            citizenships = entry.findall(citizenship_path, ns)
-            doc['citizenships'] = citizenship.get_citizenship(citizenships)
-            dob = entry.find(dob_path, ns)
-            doc['dates_of_birth'] = convert_date.parse_date(dob.text) if dob is not None else None
+        for f in null_fields:
+            sanctions_entry[f] = None
 
-            for f in null_fields:
-                doc[f] = None
+        doc_copy = sanctions_entry.copy()
+        doc_list.append(doc_copy)
 
-            doc = dict(sorted(doc.items()))
-            doc_copy = doc.copy()
-            doc_list.append(doc_copy)
-
-            doc['addresses'] = nested_fields.make_flat_address(doc['addresses'])
-            doc['alt_names'] = '; '.join(doc['alt_names'])
-            doc['programs'] = '; '.join(doc['programs'])
-            doc['_id'] = doc['id']
-            del doc['id']
-            id_list = []
-            for d in doc['ids']:
-                id_list.append(", ".join([v for v in d.values() if v]))
-            doc['ids'] = "; ".join(id_list)
-            tsv_writer.writerow(doc)
-            csv_writer.writerow(doc)
+        sanctions_entry['addresses'] = nested_fields.make_flat_address(sanctions_entry['addresses'])
+        sanctions_entry['alt_names'] = '; '.join(sanctions_entry['alt_names'])
+        sanctions_entry['programs'] = '; '.join(sanctions_entry['programs'])
+        sanctions_entry['_id'] = sanctions_entry['id']
+        del sanctions_entry['id']
+        id_list = []
+        for d in sanctions_entry['ids']:
+            id_list.append(", ".join([v for v in d.values() if v]))
+        sanctions_entry['ids'] = "; ".join(id_list)
+        tsv_writer.writerow(sanctions_entry)
+        csv_writer.writerow(sanctions_entry)
 
     json.dump(doc_list, json_output)
 
