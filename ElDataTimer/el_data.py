@@ -4,11 +4,9 @@ import hashlib
 import logging
 import os
 
-import urllib.request
-
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
-from shared import convert_date, csl_meta, country_code, output
+from shared import convert_date, csl_meta, country_code, output, request
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
@@ -17,8 +15,8 @@ source_abbr = 'el'
 
 def main():
     url = 'https://www.bis.doc.gov/index.php/documents/consolidated-entity-list/1072-el-2/file'
-    source_list_url = 'http://www.bis.doc.gov/index.php/policy-guidance/lists-of-parties-of-concern/entity-list'
-    source_information_url = 'http://www.bis.doc.gov/index.php/policy-guidance/lists-of-parties-of-concern/entity-list'
+    source_list_url = 'https://www.bis.doc.gov/index.php/policy-guidance/lists-of-parties-of-concern/entity-list'
+    source_information_url = 'https://www.bis.doc.gov/index.php/policy-guidance/lists-of-parties-of-concern/entity-list'
     source_name = 'Entity List (EL) - Bureau of Industry and Security'
     expected_headers = frozenset({
         'Source List', 'Entity Number', 'SDN Type',
@@ -35,7 +33,7 @@ def main():
 
     logging.info('Checking last updated')
     last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
-    response = urllib.request.urlopen(url)
+    response = request.urlopen_with_user_agent(url)
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:
         logging.info('No new data. Skipping processing.')
@@ -46,7 +44,9 @@ def main():
     csvfile = csv.DictReader(lines)
     source_csv_fields = list(filter(None, csvfile.fieldnames))
     logging.info('Checking header')
-    if not set(source_csv_fields) == (expected_headers):
+    if not expected_headers.issubset(set(source_csv_fields)):
+        logging.info(f'fields not in source {expected_headers.difference(source_csv_fields)}')
+        logging.info(f'new fields in source {set(source_csv_fields).difference(expected_headers)}')
         raise ValueError("Actual headers differ from expected headers")
 
     logging.info('Processing data')

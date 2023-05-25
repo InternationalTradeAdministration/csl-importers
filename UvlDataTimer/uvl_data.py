@@ -4,12 +4,10 @@ import hashlib
 import logging
 import os
 
-import urllib.request
-
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import country_code, csl_meta, output
+from shared import country_code, csl_meta, output, request
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
@@ -25,7 +23,7 @@ def main():
 
     logging.info('Checking last updated')
     last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
-    response = urllib.request.urlopen(url)
+    response = request.urlopen_with_user_agent(url)
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:
         logging.info('No new data. Skipping processing.')
