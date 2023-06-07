@@ -18,7 +18,7 @@ source_abbr = 'dtc'
 
 def main():
     stat_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=5d03bca21b2255102dc36311f54bcb91'
-    admin_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=733a90b0dbce938044f9ff621f96195d'
+    admin_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=d78bbc2f1b8f29d0c6c3866ae54bcbd7'
     source_information_url = 'https://www.pmddtc.state.gov/ddtc_public?id=ddtc_kb_article_page&sys_id=c22d1833dbb8d300d0a370131f9619f0'
     source_name = 'ITAR Debarred (DTC) - State Department'
 
@@ -31,16 +31,21 @@ def main():
         'Debarment Order', 'Federal Register Notice'
     })
 
-    logging.info('Checking last updated')
-    last_modified = csl_meta.get_meta_url_last_modified(source_abbr, 'utf-8-sig')
+    logging.info(f"Checking stat last updated {stat_debarred_url}")
+    stat_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_stat", 'utf-8-sig')
     stat_response = urllib.request.urlopen(stat_debarred_url)
-    filename_meta_date = stat_response.info()['Content-Disposition']
-    latest_modified = ''.join(re.findall('_(.*).csv"', filename_meta_date))
-    if last_modified == latest_modified:
+    stat_latest_modified = extract_latest_modified(stat_response)
+
+    logging.info(f"Checking admin last updated {admin_debarred_url}")
+    admin_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_admin", 'utf-8-sig')
+    admin_response = urllib.request.urlopen(admin_debarred_url)
+    admin_latest_modified = extract_latest_modified(admin_response)
+
+    if stat_last_modified == stat_latest_modified and admin_last_modified == admin_latest_modified:
         logging.info('No new data. Skipping processing.')
         return 0
 
-    logging.info('Requesting statutorily debarred data')
+    logging.info('reading stat data')
     stat_lines = [line.decode('utf-8-sig') for line in stat_response.readlines()]
     stat_csvfile = csv.DictReader(stat_lines)
     source_csv_fields = stat_csvfile.fieldnames
@@ -49,8 +54,7 @@ def main():
     if not set(source_csv_fields) == (stat_expected_headers):
         raise ValueError("Actual headers differ from expected. Stat.")
 
-    logging.info('Requesting admin debarred data')
-    admin_response = urllib.request.urlopen(admin_debarred_url)
+    logging.info('reading admin data')
     admin_lines = [line.decode('utf-8') for line in admin_response.readlines()]
     admin_csvfile = csv.DictReader(admin_lines)
     admin_csv_fields = admin_csvfile.fieldnames
@@ -125,10 +129,15 @@ def main():
     json_output.close()
     logging.info('Write last modified file')
     content_setting = ContentSettings(content_type='text/plain')
-    blob_client = blob_service_client.get_blob_client(container=csl_container, blob=f"{source_abbr}_meta.txt")
-    blob_client.upload_blob(latest_modified, overwrite=True, content_settings=content_setting)
-    json_output.close()
+    blob_client = blob_service_client.get_blob_client(container=csl_container, blob=f"{source_abbr}_stat_meta.txt")
+    blob_client.upload_blob(stat_latest_modified, overwrite=True, content_settings=content_setting)
+    blob_client = blob_service_client.get_blob_client(container=csl_container, blob=f"{source_abbr}_admin_meta.txt")
+    blob_client.upload_blob(admin_latest_modified, overwrite=True, content_settings=content_setting)
 
+
+def extract_latest_modified(response):
+    latest_filename = response.info()['Content-Disposition']
+    return re.search(r"\_(\d{1,2}\.\d{1,2}\.\d{2})", latest_filename).group(1)
 
 def process_names(names):
     if '(a.k.a. ' in names or '(aka ' in names:

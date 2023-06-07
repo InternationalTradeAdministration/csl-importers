@@ -59,8 +59,11 @@ def main(mytimer: func.TimerRequest) -> None:
                 entity_count += 1
                 doc_list.append(element)
 
-    dtc_res = urllib.request.urlopen(dtc_meta_url).read().decode('utf-8').strip()
-    dtc_date = datetime.datetime.strptime(dtc_res, '%m.%d.%y')
+    dtc_admin_last_modified = csl_meta.get_meta_url_last_modified('dtc_admin', 'utf-8-sig')
+    dtc_admin_date = datetime.datetime.strptime(dtc_admin_last_modified, '%m.%d.%y')
+    dtc_stat_last_modified = csl_meta.get_meta_url_last_modified('dtc_stat', 'utf-8-sig')
+    dtc_stat_date = datetime.datetime.strptime(dtc_stat_last_modified, '%m.%d.%y')
+    dtc_date = dtc_admin_date if dtc_admin_date >= dtc_stat_date else dtc_stat_date
     dtc_updated = dtc_date.strftime('%Y-%m-%dT%H:%M:%S+00:00')
 
     cap_updated = get_date(cap_meta_url)
