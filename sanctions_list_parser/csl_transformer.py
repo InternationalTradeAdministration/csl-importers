@@ -50,14 +50,13 @@ def transform(entry):
         'ids': ids
     }
 
-    if 'features' in distinct_party:
-        features = distinct_party['features']
-        for i in features:
-            csl_key, feature_value = __transform_feature(i)
-            if csl_key in transformed_entry:
-                transformed_entry[csl_key].append(feature_value)
-            else:
-                transformed_entry[csl_key] = [feature_value]
+    features = distinct_party['features']
+    for i in features:
+        csl_key, feature_value = __transform_feature(i)
+        if csl_key in transformed_entry:
+            transformed_entry[csl_key].append(feature_value)
+        else:
+            transformed_entry[csl_key] = [feature_value]
 
     return transformed_entry
 
@@ -105,11 +104,11 @@ def __transform_feature(feature):
 
 
 def __transform_location(location):
-    address_lines = [__get_address_field(location, address_line) for address_line in TREASURY_ADDRESS_FIELDS]
-    city = __get_address_field(location, 'CITY')
-    state = __get_address_field(location, 'STATE/PROVINCE')
-    postal_code = __get_address_field(location, 'POSTAL CODE')
-    country = __get_address_field(location, 'COUNTRY')
+    address_lines = [location.get(field) for field in TREASURY_ADDRESS_FIELDS]
+    city = location.get('CITY')
+    state = location.get('STATE/PROVINCE')
+    postal_code = location.get('POSTAL CODE')
+    country = location.get('COUNTRY')
     address = [address_line for address_line in address_lines if address_line is not None]
     address_str = ', '.join(address) if address else None
 
@@ -122,10 +121,6 @@ def __transform_location(location):
     }
 
     return address_fields
-
-
-def __get_address_field(location, key):
-    return location[key] if key in location else None
 
 
 def __build_ids_value_from_feature(k, v):

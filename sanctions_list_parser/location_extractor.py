@@ -20,12 +20,11 @@ def extract(reference_dict, root, location_id):
 
 
 def __extract_location_country(reference_dict, location):
-    country_reference_dict = reference_dict['Country']
     location_country = finder.find_location_country(location)
     country_iso2 = None
     if location_country is not None:
         country_id = int(location_country.attrib['CountryID'])
-        country_iso2 = country_reference_dict[country_id]['iso2']
+        country_iso2 = reference_dict['Country'][country_id]['iso2']
 
     return country_iso2
 
@@ -33,5 +32,3 @@ def __extract_location_country(reference_dict, location):
 def __extract_location_part_value(location_part):
     location_part_value = finder.find_primary_location_part_value(location_part)
     return location_part_value.text.strip()
-
-

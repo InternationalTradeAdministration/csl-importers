@@ -75,6 +75,7 @@ def find_date_period(feature):
 def find_date_point(boundary, start_or_from, date_period):
     return date_period.find(f'./un:{boundary}/un:{start_or_from}', NS)
 
+
 def find_date_part(parent, date_part_name):
     return parent.find(f'./un:{date_part_name}', NS)
 
