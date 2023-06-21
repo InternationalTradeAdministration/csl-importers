@@ -13,6 +13,12 @@ SOURCES_DICT = {
         'list_url': NON_SDN_LIST_URL,
         'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list/ns-cmic-list'
     },
+    'fse': {
+        'list_id': 91469,
+        'source': 'Foreign Sanctions Evaders (FSE) - Treasury Department',
+        'list_url': NON_SDN_LIST_URL,
+        'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list-non-sdn-lists/foreign-sanctions-evaders-fse-list'
+    },
     'mbs': {
         'list_id': 91868,
         'source': 'Non-SDN Menu-Based Sanctions List (NS-MBS List) - Treasury Department',
