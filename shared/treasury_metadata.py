@@ -10,7 +10,13 @@ SOURCES_DICT = {
         'source': 'Non-SDN Menu-Based Sanctions List (NS-MBS List) - Treasury Department',
         'list_url': 'https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml',
         'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list-non-sdn-lists/non-sdn-menu-based-sanctions-list-ns-mbs-list'
-    }
+    },
+    'plc': {
+        'list_id': 91243,
+        'source': 'Palestinian Legislative Council List (PLC) - Treasury Department',
+        'list_url': 'https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml',
+        'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list/non-sdn-palestinian-legislative-council-ns-plc-list'
+    },
 }
 
 def get_treasury_metadata(source_abbr):

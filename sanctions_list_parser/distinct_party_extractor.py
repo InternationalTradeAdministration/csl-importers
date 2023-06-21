@@ -42,13 +42,18 @@ def __extract_id_registrations(reference_dict, root, identity):
         id_reg_doc_type_id = int(id_reg_doc.attrib['IDRegDocTypeID'])
         id_reg_doc_type = id_reg_doc_reference_dict[id_reg_doc_type_id]['value']
         id_reg_no = finder.find_id_registration_no(id_reg_doc).text.strip()
-        country_id = int(id_reg_doc.attrib['IssuedBy-CountryID'])
-        country = country_reference_dict[country_id]['iso2']
-        id_registration_list.append({
+
+        id_registration = {
             'IdRegDocType': id_reg_doc_type,
             'IdRegNo': id_reg_no,
-            'Country': country
-        })
+        }
+
+        if 'IssuedBy-CountryID' in id_reg_doc.attrib:
+            country_id = int(id_reg_doc.attrib['IssuedBy-CountryID'])
+            country = country_reference_dict[country_id]['iso2']
+            id_registration['Country'] = country
+
+        id_registration_list.append(id_registration)
 
     return id_registration_list
 

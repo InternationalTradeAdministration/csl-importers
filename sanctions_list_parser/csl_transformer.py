@@ -5,8 +5,8 @@ TREASURY_ADDRESS_FIELDS = frozenset([
 ])
 
 TREASURY_FEATURE_TO_CSL_FIELD_DICT = {
-    'Birthdate': 'date_of_birth',
-    'Place of Birth': 'place_of_birth',
+    'Birthdate': 'dates_of_birth',
+    'Place of Birth': 'places_of_birth',
     'Citizenship Country': 'citizenships',
     'Location': 'addresses'
 }
@@ -41,10 +41,10 @@ def transform(entry):
 
     transformed_entry = {
         'id': profile_id,
-        'entity_number': profile_id,
-        'type': entry_type,
         'name': name,
         'alt_names': alt_names,
+        'entity_number': profile_id,
+        'type': entry_type,
         'remarks': remarks,
         'programs': programs,
         'ids': ids
@@ -76,11 +76,15 @@ def __transform_name(name_dict):
 def __transform_ids(id_registrations):
     ids = []
     for id_reg in id_registrations:
-        ids.append({
+        id_entry = {
             'type': id_reg['IdRegDocType'],
             'number': id_reg['IdRegNo'],
-            'country': id_reg['Country']
-        })
+        }
+
+        if 'Country' in id_reg:
+            id_entry['country'] = id_reg['Country']
+
+        ids.append(id_entry)
 
     return ids
 

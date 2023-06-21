@@ -66,7 +66,8 @@ def run_import(source_abbr):
         doc_copy = doc.copy()
         doc_list.append(doc_copy)
 
-        doc['addresses'] = nested_fields.make_flat_address(doc['addresses'])
+        addresses = doc.get('addresses') or []
+        doc['addresses'] = nested_fields.make_flat_address(addresses)
         doc['alt_names'] = '; '.join(doc['alt_names'])
         doc['programs'] = '; '.join(doc['programs'])
         doc['_id'] = doc['id']
