@@ -2,7 +2,7 @@ import datetime
 import logging
 
 import azure.functions as func
-from . import mbs_data
+from ..shared import treasury_importer
 
 
 def main(mytimer: func.TimerRequest) -> None:
@@ -12,6 +12,6 @@ def main(mytimer: func.TimerRequest) -> None:
     if mytimer.past_due:
         logging.info('The timer is past due!')
 
-    mbs_data.main()
+    treasury_importer.run_import('mbs')
 
     logging.info('Python timer trigger function ran at %s', utc_timestamp)

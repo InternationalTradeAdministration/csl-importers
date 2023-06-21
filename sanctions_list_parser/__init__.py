@@ -1,1 +1,2 @@
-from .parser import Parser as SanctionsListParser
+from .treasury_extractor import TreasuryExtractor
+from .treasury_processor import TreasuryProcessor

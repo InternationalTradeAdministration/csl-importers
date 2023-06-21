@@ -1,30 +1,20 @@
 import csv
 import json
-import logging
 import os
+import logging
+
 import urllib.request
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import csl_meta, nested_fields, output
+from . import csl_meta, nested_fields, output, treasury_metadata
 
-from sanctions_list_parser import SanctionsListParser
+from ..sanctions_list_parser import TreasuryProcessor
+
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-ns = {'xmlns': 'http://tempuri.org/sdnList.xsd'}
-
-source_abbr = 'cap'
-source_name = 'Capta List (CAP) - Treasury Department'
-source_list_url = 'https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml'
-source_information_url = 'https://home.treasury.gov/policy-issues/financial-sanctions/consolidated-sanctions-list-non-sdn-lists/list-of-foreign-financial-institutions-subject-to-correspondent-account-or-payable-through-account-sanctions-capta-list'
-
-address_path = 'xmlns:addressList/xmlns:address'
-alt_names_path = 'xmlns:akaList/xmlns:aka'
-citizenship_path = 'xmlns:citizenshipList/xmlns:citizenship/xmlns:country'
-dob_path = 'xmlns:dateOfBirthList/xmlns:dateOfBirthItem/xmlns:dateOfBirth'
-id_path = 'xmlns:idList/xmlns:id'
 
 null_fields = [
     'call_sign', 'end_date', 'federal_register_notice',
@@ -36,24 +26,24 @@ null_fields = [
 ]
 
 
-def main():
+def run_import(source_abbr):
     logging.info('Checking last updated')
     last_modified = csl_meta.get_meta_url_last_modified(source_abbr)
 
-    response = urllib.request.urlopen(source_list_url)
+    source_metadata = treasury_metadata.get_treasury_metadata(source_abbr)
+
+    logging.info('Requesting data file')
+    response = urllib.request.urlopen(source_metadata['list_url'])
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:
         logging.info('No new data. Skipping processing.')
         return 0
 
-    logging.info('Requesting data file')
+    list_id = source_metadata['list_id']
+    logging.info(f'Processing {source_abbr} data with list_id {list_id}')
+    processor = TreasuryProcessor(response)
+    sanctions_entries = processor.get_sanctions_entries(list_id)
 
-    sanction_list_parser = SanctionsListParser(response)
-    capta_list = sanction_list_parser.get_sanctions_list_by_name('capta')
-    logging.info(f'capta_list {capta_list}')
-    sanctions_entries = sanction_list_parser.get_sanctions_entries_by_list_id(capta_list['id'])
-
-    logging.info('Processing data')
     csv_output = StringIO()
     tsv_output = StringIO()
     json_output = StringIO()
@@ -63,30 +53,30 @@ def main():
     tsv_writer.writeheader()
     doc_list = []
 
+    source_info = {
+        'source': source_metadata['source'],
+        'source_information_url': source_metadata['list_information_url'],
+        'source_list_url': source_metadata['list_url']
+    }
+
     for sanctions_entry in sanctions_entries:
-        sanctions_entry['id'] = f'{sanctions_entry["id"]}'
-        sanctions_entry['entity_number'] = sanctions_entry['id']
-        sanctions_entry['source'] = source_name
-        sanctions_entry['source_information_url'] = source_information_url
-        sanctions_entry['source_list_url'] = source_list_url
+        sanctions_entry.update(source_info)
 
-        for f in null_fields:
-            sanctions_entry[f] = None
-
-        doc_copy = sanctions_entry.copy()
+        doc = dict(sorted(sanctions_entry.items()))
+        doc_copy = doc.copy()
         doc_list.append(doc_copy)
 
-        sanctions_entry['addresses'] = nested_fields.make_flat_address(sanctions_entry['addresses'])
-        sanctions_entry['alt_names'] = '; '.join(sanctions_entry['alt_names'])
-        sanctions_entry['programs'] = '; '.join(sanctions_entry['programs'])
-        sanctions_entry['_id'] = sanctions_entry['id']
-        del sanctions_entry['id']
+        doc['addresses'] = nested_fields.make_flat_address(doc['addresses'])
+        doc['alt_names'] = '; '.join(doc['alt_names'])
+        doc['programs'] = '; '.join(doc['programs'])
+        doc['_id'] = doc['id']
+        del doc['id']
         id_list = []
-        for d in sanctions_entry['ids']:
+        for d in doc['ids']:
             id_list.append(", ".join([v for v in d.values() if v]))
-        sanctions_entry['ids'] = "; ".join(id_list)
-        tsv_writer.writerow(sanctions_entry)
-        csv_writer.writerow(sanctions_entry)
+        doc['ids'] = "; ".join(id_list)
+        tsv_writer.writerow(doc)
+        csv_writer.writerow(doc)
 
     json.dump(doc_list, json_output)
 
