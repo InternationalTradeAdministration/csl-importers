@@ -68,8 +68,12 @@ def run_import(source_abbr):
 
         addresses = doc.get('addresses') or []
         doc['addresses'] = nested_fields.make_flat_address(addresses)
-        doc['alt_names'] = '; '.join(doc['alt_names'])
-        doc['programs'] = '; '.join(doc['programs'])
+        flatten_array(doc, 'alt_names')
+        flatten_array(doc, 'citizenships')
+        flatten_array(doc, 'dates_of_birth')
+        flatten_array(doc, 'places_of_birth')
+        flatten_array(doc, 'programs')
+
         doc['_id'] = doc['id']
         del doc['id']
         id_list = []
@@ -102,3 +106,8 @@ def run_import(source_abbr):
     blob_client = blob_service_client.get_blob_client(container=csl_container, blob=f"{source_abbr}_meta.txt")
     blob_client.upload_blob(latest_modified, overwrite=True, content_settings=content_setting)
     json_output.close()
+
+
+def flatten_array(doc, key):
+    if key in doc:
+        doc[key] = '; '.join(doc[key])
