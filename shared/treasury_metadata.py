@@ -5,6 +5,12 @@ SOURCES_DICT = {
         'list_url': 'https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml',
         'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list-non-sdn-lists/list-of-foreign-financial-institutions-subject-to-correspondent-account-or-payable-through-account-sanctions-capta-list'
     },
+    'cmic': {
+        'list_id': 92052,
+        'source': 'Non-SDN Chinese Military-Industrial Complex Companies List (CMIC) - Treasury Department',
+        'list_url': 'https://www.treasury.gov/ofac/downloads/sanctions/1.0/cons_advanced.xml',
+        'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list/ns-cmic-list'
+    },
     'mbs': {
         'list_id': 91868,
         'source': 'Non-SDN Menu-Based Sanctions List (NS-MBS List) - Treasury Department',
