@@ -17,7 +17,7 @@ source_abbr = 'dtc'
 
 
 def main():
-    stat_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=5d03bca21b2255102dc36311f54bcb91'
+    stat_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=b601eee91b6329102b6ca932f54bcbfd'
     admin_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=d78bbc2f1b8f29d0c6c3866ae54bcbd7'
     source_information_url = 'https://www.pmddtc.state.gov/ddtc_public?id=ddtc_kb_article_page&sys_id=c22d1833dbb8d300d0a370131f9619f0'
     source_name = 'ITAR Debarred (DTC) - State Department'
@@ -32,12 +32,12 @@ def main():
     })
 
     logging.info(f"Checking stat last updated {stat_debarred_url}")
-    stat_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_stat", 'utf-8-sig')
+    stat_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_stat", 'utf-8')
     stat_response = urllib.request.urlopen(stat_debarred_url)
     stat_latest_modified = extract_latest_modified(stat_response)
 
     logging.info(f"Checking admin last updated {admin_debarred_url}")
-    admin_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_admin", 'utf-8-sig')
+    admin_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_admin", 'utf-8')
     admin_response = urllib.request.urlopen(admin_debarred_url)
     admin_latest_modified = extract_latest_modified(admin_response)
 
@@ -46,7 +46,7 @@ def main():
         return 0
 
     logging.info('reading stat data')
-    stat_lines = [line.decode('utf-8-sig') for line in stat_response.readlines()]
+    stat_lines = [line.decode('iso-8859-1') for line in stat_response.readlines()]
     stat_csvfile = csv.DictReader(stat_lines)
     source_csv_fields = stat_csvfile.fieldnames
 
