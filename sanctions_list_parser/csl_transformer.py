@@ -1,8 +1,8 @@
-TREASURY_ADDRESS_FIELDS = frozenset([
+TREASURY_ADDRESS_FIELDS = [
     'ADDRESS1',
     'ADDRESS2',
     'ADDRESS3',
-])
+]
 
 TREASURY_FEATURE_TO_CSL_FIELD_DICT = {
     'Birthdate': 'dates_of_birth',
