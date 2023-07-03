@@ -31,6 +31,12 @@ SOURCES_DICT = {
         'list_url': NON_SDN_LIST_URL,
         'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list/non-sdn-palestinian-legislative-council-ns-plc-list'
     },
+    'ssi': {
+        'list_id': 91507,
+        'source': 'Sectoral Sanctions Identifications List (SSI) - Treasury Department',
+        'list_url': NON_SDN_LIST_URL,
+        'list_information_url': 'https://ofac.treasury.gov/consolidated-sanctions-list-non-sdn-lists/sectoral-sanctions-identifications-ssi-list'
+    }
 }
 
 def get_treasury_metadata(source_abbr):
