@@ -14,7 +14,7 @@ source_abbr = 'meu'
 
 
 def main():
-    url = 'https://www.bis.doc.gov/meu/meu.csv'
+    url = 'https://www.bis.doc.gov/index.php/documents/consolidated-entity-list/2884-meu/file'
     source_list_url = 'https://www.bis.doc.gov/index.php/policy-guidance/lists-of-parties-of-concern'
     source_name = 'Military End User (MEU) List - Bureau of Industry and Security'
     expected_headers = frozenset({
