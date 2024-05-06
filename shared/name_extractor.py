@@ -1,4 +1,4 @@
-ns = {'xmlns': 'http://tempuri.org/sdnList.xsd'}
+ns = {'xmlns': 'https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/XML'}
 
 
 def get_name(entry, source=None):

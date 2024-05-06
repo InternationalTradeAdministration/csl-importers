@@ -1,13 +1,14 @@
 from . import country_code, convert_date
 
 import logging
+import json
 
 
 def get_ids(entries):
     ids = []
     for id in entries:
         id = {
-            child.tag.lower().replace("{http://tempuri.org/sdnlist.xsd}id", ""): child.text.strip()
+            child.tag.lower().replace("{https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/xml}id", ""): child.text.strip()
             for child in id
             if child.text and len(child.text.strip()) > 0 and "uid" not in child.tag
         }
@@ -24,7 +25,7 @@ def get_nationalities(entries):
     nats = []
     for nat in entries:
         nat = {
-            child.tag.lower().replace("{http://tempuri.org/sdnlist.xsd}", ""): child.text.strip()
+            child.tag.lower().replace("{https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/xml}", ""): child.text.strip()
             for child in nat
             if child.text and len(child.text.strip()) > 0 and "country" in child.tag
         }
@@ -36,7 +37,7 @@ def get_places_of_birth(entries):
     places_of_birth = []
     for pob in entries:
         pob = {
-            child.tag.lower().replace("{http://tempuri.org/sdnlist.xsd}", ""): child.text.strip()
+            child.tag.lower().replace("{https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/xml}", ""): child.text.strip()
             for child in pob
             if child.text and len(child.text.strip()) > 0
         }
@@ -50,7 +51,7 @@ def get_dates_of_birth(entries):
     dates_of_birth = []
     for dob in entries:
         dob = {
-            child.tag.lower().replace("{http://tempuri.org/sdnlist.xsd}", ""): child.text.strip()
+            child.tag.lower().replace("{https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/xml}", ""): child.text.strip()
             for child in dob
             if child.text and len(child.text.strip()) > 0
         }
@@ -64,7 +65,7 @@ def get_dates_of_birth(entries):
 def get_addresses(entries):
     try:
         addresses = {
-            child.tag.lower().replace("{http://tempuri.org/sdnlist.xsd}", ""): child.text.strip()
+            child.tag.lower().replace("{https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/xml}", ""): child.text.strip()
             for address in entries
             for child in address
             if child.text and len(child.text.strip()) > 0 and "uid" not in child.tag
@@ -102,12 +103,13 @@ def get_multiline_addresses(entries):
     for address in entries:
         try:
             address = {
-                child.tag.lower().replace("{http://tempuri.org/sdnlist.xsd}", ""): child.text.strip()
+                child.tag.lower().replace("{https://sanctionslistservice.ofac.treas.gov/api/publicationpreview/exports/xml}", ""): child.text.strip()
                 for child in address
                 if child.text and len(child.text.strip()) > 0 and "uid" not in child.tag
             }
             if not address:
                 continue
+
             address_keys = [*address]
             if 'address1' in address_keys:
                 address['address'] = address['address1']

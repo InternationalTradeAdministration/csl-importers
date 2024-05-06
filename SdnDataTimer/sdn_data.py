@@ -8,15 +8,15 @@ import urllib.request
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import citizenship, csl_meta, name_extractor, nested_fields, output
+from ..shared import citizenship, csl_meta, name_extractor, nested_fields, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
-ns = {'xmlns': 'http://tempuri.org/sdnList.xsd'}
+ns = {'xmlns': 'https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/XML'}
 
 source_abbr = 'sdn'
 source_name = 'Specially Designated Nationals (SDN) - Treasury Department'
-source_list_url = 'https://www.treasury.gov/resource-center/sanctions/SDN-List/Pages/default.aspx'
+source_list_url = 'https://sanctionslist.ofac.treas.gov/Home/SdnList'
 source_information_url = 'https://home.treasury.gov/policy-issues/financial-sanctions/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists'
 
 address_path = 'xmlns:addressList/xmlns:address'
