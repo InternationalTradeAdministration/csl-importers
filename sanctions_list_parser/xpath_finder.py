@@ -1,4 +1,4 @@
-NS = {'un': 'http://www.un.org/sanctions/1.0'}
+NS = {'un': 'https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/ADVANCED_XML'}
 LATIN_SCRIPT_ID = 215
 PROGRAM_SANCTIONS_TYPE_ID = 1
 

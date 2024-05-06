@@ -33,7 +33,7 @@ def run_import(source_abbr):
     source_metadata = treasury_metadata.get_treasury_metadata(source_abbr)
 
     logging.info('Requesting data file')
-    response = urllib.request.urlopen(source_metadata['list_url'])
+    response = urllib.request.urlopen(source_metadata['source_url'])
     latest_modified = response.info()['Last-Modified']
     if last_modified == latest_modified:
         logging.info('No new data. Skipping processing.')
