@@ -9,7 +9,7 @@ import urllib.request
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
-from shared import csl_meta, output
+from ..shared import csl_meta, output
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
@@ -17,7 +17,7 @@ source_abbr = 'dtc'
 
 
 def main():
-    stat_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=b601eee91b6329102b6ca932f54bcbfd'
+    stat_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=91c00215478f06d07ddc0c03e16d43e0'
     admin_debarred_url = 'https://www.pmddtc.state.gov/sys_attachment.do?sys_id=d78bbc2f1b8f29d0c6c3866ae54bcbd7'
     source_information_url = 'https://www.pmddtc.state.gov/ddtc_public?id=ddtc_kb_article_page&sys_id=c22d1833dbb8d300d0a370131f9619f0'
     source_name = 'ITAR Debarred (DTC) - State Department'
@@ -39,14 +39,14 @@ def main():
     logging.info(f"Checking admin last updated {admin_debarred_url}")
     admin_last_modified = csl_meta.get_meta_url_last_modified(f"{source_abbr}_admin", 'utf-8')
     admin_response = urllib.request.urlopen(admin_debarred_url)
-    admin_latest_modified = extract_latest_modified(admin_response)
+    admin_latest_modified = extract_latest_modified(admin_response, r"\_(\d{1,2}\.\d{1,2}\.\d{2})")
 
     if stat_last_modified == stat_latest_modified and admin_last_modified == admin_latest_modified:
         logging.info('No new data. Skipping processing.')
         return 0
 
     logging.info('reading stat data')
-    stat_lines = [line.decode('iso-8859-1') for line in stat_response.readlines()]
+    stat_lines = [line.decode('utf-8-sig') for line in stat_response.readlines()]
     stat_csvfile = csv.DictReader(stat_lines)
     source_csv_fields = stat_csvfile.fieldnames
 
@@ -135,9 +135,10 @@ def main():
     blob_client.upload_blob(admin_latest_modified, overwrite=True, content_settings=content_setting)
 
 
-def extract_latest_modified(response):
+def extract_latest_modified(response, regex=r"\_(\d{8})\.csv"):
     latest_filename = response.info()['Content-Disposition']
-    return re.search(r"\_(\d{1,2}\.\d{1,2}\.\d{2})", latest_filename).group(1)
+    logging.info(f"latest_filename: {latest_filename}")
+    return re.search(regex, latest_filename).group(1)
 
 def process_names(names):
     if '(a.k.a. ' in names or '(aka ' in names:

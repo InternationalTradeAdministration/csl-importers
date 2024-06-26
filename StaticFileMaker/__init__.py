@@ -9,7 +9,7 @@ import azure.functions as func
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
 
-from shared import csl_meta
+from ..shared import csl_meta
 
 connection_string = os.environ['CONNECTION_STRING']
 csl_container = os.environ['CSL_CONTAINER']
@@ -62,7 +62,7 @@ def main(mytimer: func.TimerRequest) -> None:
     dtc_admin_last_modified = csl_meta.get_meta_url_last_modified('dtc_admin', 'utf-8-sig')
     dtc_admin_date = datetime.datetime.strptime(dtc_admin_last_modified, '%m.%d.%y')
     dtc_stat_last_modified = csl_meta.get_meta_url_last_modified('dtc_stat', 'utf-8-sig')
-    dtc_stat_date = datetime.datetime.strptime(dtc_stat_last_modified, '%m.%d.%y')
+    dtc_stat_date = datetime.datetime.strptime(dtc_stat_last_modified, '%Y%m%d')
     dtc_date = dtc_admin_date if dtc_admin_date >= dtc_stat_date else dtc_stat_date
     dtc_updated = dtc_date.strftime('%Y-%m-%dT%H:%M:%S+00:00')
 
