@@ -8,7 +8,7 @@ import urllib.request
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from io import StringIO
-from shared import convert_date, country_code, csl_meta, output
+from ..shared import convert_date, country_code, csl_meta, output, request
 
 connection_string = os.environ["CONNECTION_STRING"]
 csl_container = os.environ["CSL_CONTAINER"]
@@ -34,8 +34,10 @@ def main():
         logging.info('No new data. Skipping processing.')
         return 0
 
+    encoding = request.detect_encoding(url)
+
     logging.info('Requesting data file')
-    lines = [line.decode('utf-8') for line in response.readlines()]
+    lines = [line.decode(encoding) for line in response.readlines()]
     csvfile = csv.DictReader(lines)
     source_csv_fields = csvfile.fieldnames
     logging.info('Checking header')
